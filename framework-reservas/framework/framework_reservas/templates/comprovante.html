@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block conteudo %}
+<div class="grade">
+  <section class="painel comprovante">
+    <div class="cabecalho">
+      <h2>{% if passos %}✅ Confirmação de {{ cfg.rotulo_reserva|lower }}{% else %}Comprovante{% endif %}</h2>
+      <span class="st {{ reserva.status }}">{{ status_rotulo[reserva.status] }}</span>
+    </div>
+    <dl>
+      <dt>Nº da {{ cfg.rotulo_reserva|lower }}</dt><dd>#{{ reserva.id }}</dd>
+      <dt>{{ cfg.rotulo_recurso }}</dt><dd>{{ recurso.nome }}</dd>
+      <dt>Cliente</dt><dd>{{ cliente.nome }} ({{ cliente.email }})</dd>
+      <dt>Data e horário</dt><dd>{{ reserva.inicio.strftime('%d/%m/%Y') }} das {{ reserva.inicio.strftime('%H:%M') }} às {{ reserva.fim.strftime('%H:%M') }}</dd>
+      {% for k, v in reserva.dados_extras.items() %}<dt>{{ rotulos.get(k, k) }}</dt><dd>{{ v }}</dd>{% endfor %}
+      <dt>Valor</dt><dd>{{ reserva.valor|moeda }}</dd>
+      {% if pagamento %}<dt>Pagamento</dt><dd>{{ pagamento.forma|upper }} · {{ pagamento.status }} · {{ pagamento.codigo_transacao }}</dd>{% endif %}
+    </dl>
+    {% if mensagem %}
+      <h3 style="font-size:15px;margin-top:22px">📧 Notificação enviada ao cliente — "{{ assunto }}"</h3>
+      <div class="mensagem">{{ mensagem }}</div>
+    {% endif %}
+    <p style="margin-top:22px"><a class="botao" href="{{ url_for('minhas_reservas', email=cliente.email) }}">Ver minhas {{ cfg.rotulo_reserva|lower }}s</a>
+       <a class="botao secundario" href="{{ url_for('inicio') }}">Início</a></p>
+  </section>
+  {% if passos %}
+  <aside class="painel">
+    <h2>🔗 Microserviços acionados</h2>
+    <ol class="passos">{% for servico, descricao in passos %}<li><b>{{ servico }}</b>{{ descricao }}</li>{% endfor %}</ol>
+    <p class="nota">Sequência executada pelo método template <code>realizar_reserva()</code>.</p>
+  </aside>
+  {% endif %}
+</div>
+{% endblock %}

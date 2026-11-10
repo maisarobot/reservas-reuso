@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block conteudo %}
+<div class="grade">
+  <section class="painel">
+    <h2>Nova {{ cfg.rotulo_reserva|lower }} — {{ recurso.nome }}</h2>
+    {% if erro %}<div class="alerta erro">⚠️ {{ erro }}</div>{% endif %}
+    <form method="post">
+      <fieldset><legend>Seus dados</legend>
+        <label>Nome completo</label><input name="nome" value="{{ valores.get('nome','') }}" required>
+        <div class="linha">
+          <div><label>E-mail</label><input name="email" type="email" value="{{ valores.get('email','') }}" required></div>
+          <div><label>Telefone</label><input name="telefone" value="{{ valores.get('telefone','') }}"></div>
+        </div>
+      </fieldset>
+      <fieldset><legend>Data e horário</legend>
+        <div class="linha">
+          <div><label>Data</label><input id="data" name="data" type="date" min="{{ hoje }}" value="{{ valores.get('data','') }}" required></div>
+          <div><label>Horário</label>
+            <select id="hora" name="hora" required data-valor="{{ valores.get('hora','') }}"><option value="">Escolha a data primeiro</option></select></div>
+        </div>
+      </fieldset>
+      {% if campos %}
+      <fieldset><legend>Informações da {{ cfg.rotulo_reserva|lower }}</legend>
+        <div class="linha">
+        {% for c in campos %}
+          <div><label>{{ c.rotulo }}</label>
+          {% if c.tipo == 'select' %}
+            <select name="{{ c.nome }}">{% for o in c.opcoes %}<option {% if valores.get(c.nome, c.padrao) == o %}selected{% endif %}>{{ o }}</option>{% endfor %}</select>
+          {% else %}
+            <input name="{{ c.nome }}" type="{{ c.tipo }}" value="{{ valores.get(c.nome, c.padrao) }}" {% if c.obrigatorio %}required{% endif %} {% if c.tipo=='number' %}min="1"{% endif %}>
+          {% endif %}</div>
+        {% endfor %}
+        </div>
+      </fieldset>
+      {% endif %}
+      <fieldset><legend>Pagamento</legend>
+        <div class="linha">
+          <div><label>Forma de pagamento</label>
+            <select name="forma_pagamento" id="forma">{% for v, r in formas %}<option value="{{ v }}" {% if valores.get('forma_pagamento')==v %}selected{% endif %}>{{ r }}</option>{% endfor %}</select></div>
+          <div id="cartao"><label>Número do cartão</label><input name="numero_cartao" placeholder="0000 0000 0000 0000" value="{{ valores.get('numero_cartao','') }}"></div>
+        </div>
+      </fieldset>
+      <button class="botao" type="submit">Confirmar {{ cfg.rotulo_reserva|lower }}</button>
+      <a class="botao secundario" href="{{ url_for('inicio') }}">Voltar</a>
+    </form>
+  </section>
+  <aside class="painel">
+    <span class="tipo" style="color:var(--cor);font-weight:700;font-size:12px;text-transform:uppercase">{{ recurso.tipo }}</span>
+    <h2 style="margin:4px 0">{{ recurso.nome }}</h2>
+    <p style="font-size:14px;color:#4b5563">{{ recurso.descricao }}</p>
+    {% for k, v in recurso.atributos.items() %}<span class="tag">{{ k }}: {{ v }}</span>{% endfor %}
+    {% if recurso.capacidade > 1 %}<span class="tag">Até {{ recurso.capacidade }} pessoas</span>{% endif %}
+    {% if recurso.preco_base %}<p><b>Valor base: {{ recurso.preco_base|moeda }}</b></p>{% endif %}
+    <p class="nota">Os horários exibidos já descontam as {{ cfg.rotulo_reserva|lower }}s existentes (consulta ao <b>ms-reservas</b>).</p>
+  </aside>
+</div>
+<script>
+const data = document.getElementById('data'), hora = document.getElementById('hora');
+async function carregarHorarios() {
+  if (!data.value) return;
+  hora.innerHTML = '<option>Carregando...</option>';
+  const r = await fetch(`{{ url_for('horarios') }}?recurso_id={{ recurso.id }}&data=${data.value}`);
+  const lista = await r.json();
+  hora.innerHTML = lista.length ? lista.map(h => `<option ${h===hora.dataset.valor?'selected':''}>${h}</option>`).join('')
+                                : '<option value="">Sem horários livres neste dia</option>';
+}
+data.addEventListener('change', carregarHorarios); carregarHorarios();
+const forma = document.getElementById('forma'), cartao = document.getElementById('cartao');
+function alternarCartao() { cartao.style.visibility = forma.value === 'cartao' ? 'visible' : 'hidden'; }
+forma.addEventListener('change', alternarCartao); alternarCartao();
+</script>
+{% endblock %}
