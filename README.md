@@ -35,7 +35,7 @@ ms-usuarios ms-recursos ms-reservas ms-pagamentos ms-notificacoes
 ## Estrutura de pastas
 
 ```
-framework-reservas/
+reservas-reuso/
 ├── iniciar_tudo.py              # sobe todo o sistema com um comando
 ├── requirements.txt
 ├── microservicos/
@@ -65,8 +65,8 @@ Pré-requisito: **Python 3.8 ou mais recente**.
 
 ```bash
 # 1. Baixar o projeto
-git clone https://github.com/SEU-USUARIO/framework-reservas.git
-cd framework-reservas
+git clone https://github.com/maisarobot/reservas-reuso.git
+cd reservas-reuso
 
 # 2. (Opcional) criar um ambiente virtual
 python -m venv venv
