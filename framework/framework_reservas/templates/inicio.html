@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block conteudo %}
+<div class="grade">
+  <section>
+    <h2 style="margin-top:0">{{ cfg.rotulo_recurso_plural }} disponíveis</h2>
+    {% if erro %}<div class="alerta erro">{{ erro }}</div>{% endif %}
+    <div class="recursos">
+      {% for r in recursos %}
+      <div class="card">
+        <span class="tipo">{{ r.tipo }}</span>
+        <h3>{{ r.nome }}</h3>
+        <p>{{ r.descricao }}</p>
+        <div>{% for chave, valor in r.atributos.items() %}<span class="tag">{{ chave }}: {{ valor }}</span>{% endfor %}
+             {% if r.capacidade > 1 %}<span class="tag">Até {{ r.capacidade }} pessoas</span>{% endif %}</div>
+        <div class="preco">{% if r.preco_base %}{{ r.preco_base|moeda }}{% else %}&nbsp;{% endif %}</div>
+        <a class="botao" href="{{ url_for('formulario', recurso_id=r.id) }}">{{ cfg.texto_botao }}</a>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  <aside class="painel">
+    <h2>🔗 Microserviços utilizados</h2>
+    <ul class="ms">
+      {% for m in microservicos %}
+      <li><div><span class="nome">{{ m.servico }}</span><br><span class="porta">{{ m.rota }} · porta {{ m.porta or '—' }}</span></div>
+          <span class="{{ 'up' if m.status == 'UP' else 'down' }}">{{ m.status }}</span></li>
+      {% else %}
+      <li><span class="down">API Gateway indisponível</span></li>
+      {% endfor %}
+    </ul>
+    <p class="nota">Todas as chamadas passam pela <b>API Gateway</b> (porta 8080), que descobre cada microserviço no <b>Service Registry</b> (porta 8761).</p>
+  </aside>
+</div>
+{% endblock %}
